@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Data Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .search-container { padding: 10px; background: #007bff; text-align: center; }
+        .search-container input { width: 60%; padding: 8px; }
+        .search-container button { padding: 8px 15px; background: #fff; border: none; cursor: pointer; }
+        nav { background: #222; padding: 10px; text-align: center; }
+        nav ul { list-style: none; padding: 0; }
+        nav ul li { display: inline; margin: 0 15px; cursor: pointer; color: white; }
+        .table-container { width: 90%; margin: 20px auto; background: white; padding: 15px; box-shadow: 0 0 5px gray; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        .btn { margin: 5px; padding: 8px 15px; color: white; border: none; cursor: pointer; }
+        .add-btn { background: #28a745; }
+        .sort-btn { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search records..." onkeyup="searchRecords()">
+        <button onclick="searchRecords()">Search</button>
+    </div>
+
+    <nav>
+        <ul>
+            <li onclick="showSection('patientRecords')">Patient Records</li>
+            <li onclick="showSection('doctorInfo')">Doctor Information</li>
+            <li onclick="showSection('appointments')">Appointments</li>
+            <li onclick="showSection('bedRoomManagement')">Bed & Room Management</li>
+            <li onclick="showSection('billing')">Billing & Payments</li>
+        </ul>
+    </nav>
+
+    <div id="content" class="table-container"></div>
+
+    <button class='btn add-btn' onclick='openModal()'>Add Details</button>
+    <button class='btn sort-btn' onclick="sortData('name', true)">Sort by Name (A-Z)</button>
+    <button class='btn sort-btn' onclick="sortData('name', false)">Sort by Name (Z-A)</button>
+    <button class='btn sort-btn' onclick="sortData('date', true)">Sort by Date (Oldest First)</button>
+    <button class='btn sort-btn' onclick="sortData('date', false)">Sort by Date (Newest First)</button>
+
+    <script>
+        let currentSection = "";
+        const data = {
+            patientRecords: [
+                ["P001", "John Doe", 45, "Male", "9876543210", "Dr. Emily Clark", "2024-04-01"],
+                ["P002", "Jane Smith", 30, "Female", "9988776655", "Dr. Adam White", "2024-04-02"],
+                ["P003", "Robert Brown", 55, "Male", "9112233445", "Dr. Sarah Green", "2024-03-30"],
+                ["P004", "Alice Johnson", 40, "Female", "9223344556", "Dr. Kevin Patel", "2024-04-05"],
+                ["P005", "Michael Lee", 38, "Male", "9334455667", "Dr. Emily Clark", "2024-04-06"]
+            ],
+            doctorInfo: [
+                ["D101", "Dr. Emily Clark", "Cardiology", "9876543210"],
+                ["D102", "Dr. Adam White", "Neurology", "9988776655"],
+                ["D103", "Dr. Sarah Green", "Orthopedics", "9112233445"],
+                ["D104", "Dr. Kevin Patel", "Dermatology", "9223344556"],
+                ["D105", "Dr. Laura Adams", "Pediatrics", "9334455667"]
+            ],
+            appointments: [
+                ["A001", "John Doe", "Dr. Emily Clark", "2024-04-05"],
+                ["A002", "Jane Smith", "Dr. Adam White", "2024-04-06"],
+                ["A003", "Robert Brown", "Dr. Sarah Green", "2024-04-07"],
+                ["A004", "Alice Johnson", "Dr. Kevin Patel", "2024-04-08"],
+                ["A005", "Michael Lee", "Dr. Laura Adams", "2024-04-09"]
+            ],
+            bedRoomManagement: [
+                ["R101", "Single", "Available"],
+                ["R102", "Double", "Occupied"],
+                ["R103", "ICU", "Available"],
+                ["R104", "Suite", "Occupied"],
+                ["R105", "General", "Available"]
+            ],
+            billing: [
+                ["B001", "John Doe", "$200", "Paid"],
+                ["B002", "Jane Smith", "$150", "Pending"],
+                ["B003", "Robert Brown", "$300", "Paid"],
+                ["B004", "Alice Johnson", "$250", "Pending"],
+                ["B005", "Michael Lee", "$180", "Paid"]
+            ]
+        };
+
+        function showSection(section) {
+            currentSection = section;
+            displayTable();
+        }
+
+        function displayTable() {
+            let content = `<table><tr>`;
+            let headers = {
+                patientRecords: ["Patient ID", "Full Name", "Age", "Gender", "Contact", "Doctor", "Date"],
+                doctorInfo: ["Doctor ID", "Name", "Specialty", "Contact"],
+                appointments: ["Appointment ID", "Patient Name", "Doctor", "Date"],
+                bedRoomManagement: ["Room Number", "Room Type", "Status"],
+                billing: ["Billing ID", "Patient Name", "Amount", "Status"]
+            };
+
+            content += headers[currentSection].map(h => `<th>${h}</th>`).join('');
+            content += "</tr>";
+
+            data[currentSection].forEach(row => {
+                content += "<tr>" + row.map(item => `<td>${item}</td>`).join('') + "</tr>";
+            });
+
+            content += "</table>";
+            document.getElementById("content").innerHTML = content;
+        }
+
+        function sortData(type, ascending) {
+            if (!currentSection) {
+                alert("Please select a category first.");
+                return;
+            }
+
+            let columnIndex = type === 'name' ? 1 : 6; // Name is at index 1, Date at index 6
+
+            data[currentSection].sort((a, b) => {
+                if (type === 'date') {
+                    return ascending ? new Date(a[columnIndex]) - new Date(b[columnIndex]) 
+                                     : new Date(b[columnIndex]) - new Date(a[columnIndex]);
+                } else {
+                    return ascending ? a[columnIndex].localeCompare(b[columnIndex]) 
+                                     : b[columnIndex].localeCompare(a[columnIndex]);
+                }
+            });
+
+            displayTable();
+        }
+
+        function searchRecords() {
+            let searchValue = document.getElementById("searchInput").value.toLowerCase();
+            let filteredData = data[currentSection].filter(row => row.some(item => item.toLowerCase().includes(searchValue)));
+            document.getElementById("content").innerHTML = filteredData.map(row => `<tr>${row.map(item => `<td>${item}</td>`).join('')}</tr>`).join('');
+        }
+    </script>
+</body>
+</html>
